@@ -2,7 +2,7 @@
  ## Summary
  When a new Microsoft Sentinel incident is created, this playbook gets triggered and performs below actions
  1. For each Entity (Accounts, Host, IP Address, FileHash, URL) available in Sentinel incident, it searches for a match in in OpenCTI indicators list
- 2. If it finds the match, this playbook adds a rich comment to the incident with all the collected information
+ 2. If it finds matches, this playbook adds a rich comment to the incident with the collected indicator information (up to 50 results per entity).
     ![Comment example](./images/CommentGetIndicatorInfofromOpenCTI.png)
 
 
@@ -34,5 +34,4 @@ Once deployment is complete, you will need to authorize each connection.
 #### b. Configurations in Sentinel
 1. In Microsoft sentinel analytical rules should be configured to trigger an incident with risky user account or host or URL or FileHash or IP Address. 
 2. Configure the automation rules to trigger this playbook
-
 
