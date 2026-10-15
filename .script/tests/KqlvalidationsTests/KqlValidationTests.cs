@@ -7,6 +7,7 @@ using Xunit;
 using YamlDotNet.Serialization;
 using Microsoft.Azure.Sentinel.KustoServices.Implementation;
 using Kqlvalidations.Tests.FunctionSchemasLoaders;
+using Kqlvalidations.Tests.TableSchemasLoaders;
 using System;
 using Newtonsoft.Json;
 using Octokit;
@@ -22,11 +23,14 @@ namespace Kqlvalidations.Tests
 
         public KqlValidationTests()
         {
+            var customTablesPath = Path.Combine(Utils.GetTestDirectory(TestFolderDepth), "CustomTables");
+            var customFunctionsPath = Path.Combine(Utils.GetTestDirectory(TestFolderDepth), "CustomFunctions");
+
             _queryValidator = new KqlQueryAnalyzerBuilder()
-               .WithSentinelDefaultTablesAndFunctionsSchemas()
-               .WithCustomTableSchemasLoader(new CustomJsonDirectoryTablesLoader(Path.Combine(Utils.GetTestDirectory(TestFolderDepth), "CustomTables")))
-               .WithCustomFunctionSchemasLoader(new CustomJsonDirectoryFunctionsLoader(Path.Combine(Utils.GetTestDirectory(TestFolderDepth), "CustomFunctions")))
-               .WithCustomFunctionSchemasLoader(new ParsersCustomJsonDirectoryFunctionsLoader(Path.Combine(Utils.GetTestDirectory(TestFolderDepth), "CustomFunctions")))
+               .WithCustomTableSchemasLoader(new LocalOverrideTablesLoader(customTablesPath))
+               .WithCustomFunctionSchemasLoader(new SentinelDefaultFunctionsLoader())
+               .WithCustomFunctionSchemasLoader(new CustomJsonDirectoryFunctionsLoader(customFunctionsPath))
+               .WithCustomFunctionSchemasLoader(new ParsersCustomJsonDirectoryFunctionsLoader(customFunctionsPath))
                .WithCustomFunctionSchemasLoader(new CommonFunctionsLoader())
                .Build();
         }
@@ -122,7 +126,7 @@ namespace Kqlvalidations.Tests
 
             var queryStr = (string)res["query"];
             ValidateKql(id, queryStr);
-            ValidateKqlForBestPractices(queryStr,fileName);
+            ValidateKqlForBestPractices(queryStr, fileName);
             ValidateKqlForLatestTIData(id, queryStr);
         }
 
@@ -375,7 +379,7 @@ namespace Kqlvalidations.Tests
             var parserPaths = Directory.GetDirectories(solutionDirectories, parsersFolder, SearchOption.AllDirectories).ToList();
             parserPaths.AddRange(Directory.GetDirectories(solutionDirectories, parserFolder, SearchOption.AllDirectories).ToList());
 
-            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".yaml", ".md" };
+            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".yaml", ".md", ".json" };
 
             var filteredFiles = prFiles
                 .Where(file =>
@@ -477,7 +481,7 @@ namespace Kqlvalidations.Tests
         private bool ShouldSkipTemplateValidation(string templateId)
         {
             return TemplatesToSkipValidationReader.WhiteListTemplates
-                .Where(template => 
+                .Where(template =>
 template.id
  == templateId)
                 .Where(template => !string.IsNullOrWhiteSpace(template.validationFailReason))

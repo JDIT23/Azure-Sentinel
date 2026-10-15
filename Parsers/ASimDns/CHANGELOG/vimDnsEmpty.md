@@ -1,5 +1,13 @@
 # Changelog for vimDnsEmpty.yaml
 
+## Version 1.0.0
+
+- (2026-08-06) Added EntityKey, AdditionalIds, and AdditionalEntities columns for entity querying
+
+## Version 0.5.0
+
+- (2026-03-17) Update empty parser alphabetically and align with columns from ASimTester.csv - [PR #13851](https://github.com/Azure/Azure-Sentinel/pull/13851)
+
 ## Version 0.4
 
 - (2023-01-09) Asim/dns yaml schema - [PR #7063](https://github.com/Azure/Azure-Sentinel/pull/7063)
